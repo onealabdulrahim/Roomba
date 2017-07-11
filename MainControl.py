@@ -5,7 +5,7 @@ import ControllerRobust
 import DeadReckon
 # import
 
-# global r
+# global r is robot object from create library
 r = create.Create("COM4")
 
 XFinal = 0
@@ -22,7 +22,7 @@ yf = open('yf', 'w')
 # Vf = open('Vf','w')
 # Wf = open('Wf','w')
 
-while (X != XFinal and Y != YFinal):
+while X != XFinal and Y != YFinal:
     (V, W) = ControllerRobust.Control(X, Y, Um, XFinal, YFinal)
     (X, Y, Beta, LC, RC) = DeadReckon.Position(V, W, X, Y, Beta, LC, RC, r)
     xf.write(str(X))
@@ -32,7 +32,7 @@ while (X != XFinal and Y != YFinal):
     # Vf.write(str(V))
     # Wf.write(str(W))
     print(Y)
-input("PressEnterToExit")
+input("Press any key to exit...")
 r.shutdown()
 
 xf.close()
