@@ -8,7 +8,7 @@ def Control(X, Y, Um, XFinal, YFinal):
 
     # values from predetermined calculations
     norm = math.pow(math.pow((X - XFinal), 2) + math.pow((Y - YFinal), 2), (1 / 2))
-    Vd = 0.1 / (1 + 1 / (3000 * math.pow(norm, 2)))
+    Vd = 0.001 / (1 + 1 / (3000 * math.pow(norm, 2)))
     a = 0.1
     fprime = -1.5 * math.pow(X, 2) - 2.5 * X
     eps = 0.5
@@ -23,7 +23,7 @@ def Control(X, Y, Um, XFinal, YFinal):
                                                          (Y - (-0.5 * math.pow(X, 3) - 1.25 * math.pow(X, 2))))
     ustar1 = Vd * math.cos(math.atan2(fprime, 1) - theta_d)
     ustar2 = Vd * math.sin(math.atan2(fprime, 1) - theta_d) / a
-
+'''
     # controlling range
     if abs(ustar1) <= Um and abs(ustar2) <= Um:
         control1 = ustar1
@@ -65,5 +65,7 @@ def Control(X, Y, Um, XFinal, YFinal):
         control1 = abs(Um / ustar2) * ustar1
         control2 = -Um
     V = control1
-    W = control2
+    W = control2 '''
+
+#   V = ustar1
     return (V, W)
