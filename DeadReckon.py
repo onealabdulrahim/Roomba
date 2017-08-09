@@ -1,7 +1,7 @@
 import serial
 import math
 import create
-
+import time
 
 def Position(V, W, X, Y, Beta, LC, RC, r):
     """ The Position method updates the robot's current position.
@@ -22,13 +22,15 @@ def Position(V, W, X, Y, Beta, LC, RC, r):
 
     # r is robot object from create library
     r.driveDirect(LeftWheelVel, RightWheelVel) # assign calculated velocities
-    LCnew = r.getSensor("LEFT_ENCODER") # recieve updated sensor values
+    
+    LCnew = r.getSensor("LEFT_ENCODER") # recieve updated sensor 
     RCnew = r.getSensor("RIGHT_ENCODER")
     DLC = LCnew - LC # update sensor values from previously record
     DRC = RCnew - RC
-    DLWheel = DLC * 2 * math.pi / 508.8
-    DRWheel = DRC * 2 * math.pi / 508.8
-    BetaNew = ((DRWheel - DLWheel) * (rad / d)) / 2 + Beta
-    XNew = (((rad / 2) * (DRWheel + DLWheel)) * math.cos(BetaNew)) + X
-    YNew = (((rad / 2) * (DRWheel + DLWheel)) * math.sin(BetaNew)) + Y
+    # L is Left?
+    DLWheel = DLC * (72.0 * math.pi / 508.8) / 10
+    DRWheel = DRC * (72.0 * math.pi / 508.8) / 10
+    BetaNew = ((DRWheel - DLWheel) / d) + Beta
+    XNew = ((1/2 * (DRWheel + DLWheel)) * math.cos(BetaNew)) + X
+    YNew = ((1/2 * (DRWheel + DLWheel)) * math.sin(BetaNew)) + Y
     return(XNew, YNew, BetaNew, LCnew, RCnew)
