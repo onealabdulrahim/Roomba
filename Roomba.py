@@ -18,7 +18,7 @@ Roomba = create.Create("COM4") #port = COM4 (RPi & Windows)
 
 ''' ----- Control & Calculation Methods ----- '''
 
-def Control(xi, yi, xf, yf):
+def control(xi, yi, xf, yf):
     """ Returns the necessary velocity and angular
         velocity based on position values.
 
@@ -40,9 +40,40 @@ def Control(xi, yi, xf, yf):
     v = rho*math.cos(gamma)
     w = 3*gamma+0.5*math.sin(2*gamma)*(3+2/gamma)
 
-    return v,w
+    return v, w
 
-def Position(v, w, xc, yc, beta, l_sensor, r_sensor):
+def posture(xi, yi, xf, yf):
+	""" Returns the necessary velocity and angular
+        velocity based on position values.
+
+        @param    xi    initial x value
+                  yi    initial y value
+                  xf    final x value
+                  yf    final y value
+        @return   v     velocity
+                  w     angular velocity """
+	
+	''' Lyapunov-like technique, pp 846-847 '''
+	# polar conversions
+	rho = math.pow(math.pow(xf-xi,2)+math.pow(yf-yi,2),1/2)
+	theta = atan(yi, xi)
+	
+	# four quadrant inverse tangent
+	gamma = math.atan2(yi, xi)-theta+math.pi
+	delta = gamma+theta
+	
+	# positive constants
+	k1 = 1
+	k2 = 1
+	k3 = 1
+	
+	# control law
+	v = k1*rho*math.cos(gamma)
+	w = k2*gamma+k1*(math.sin(gamma)*math.cos(gamma))/gamma*(gamma+k3*delta)
+	
+	return v, w
+	
+def position(v, w, xc, yc, beta, l_sensor, r_sensor):
     """ Updates robot position, calculates new values as needed.
         Returns new values for position & updates sensor values.
 
@@ -58,8 +89,8 @@ def Position(v, w, xc, yc, beta, l_sensor, r_sensor):
     Roomba.go(v,w)
     
     # LEFT/RIGHT encoder perpetually increase, 508.8 transistions per wheel rev
-    l_sensor_d = Roomba.getSensor("LEFT_ENCODER") - l_sensor
-    r_sensor_d = Roomba.getSensor("RIGHT_ENCODER") - r_sensor
+    l_sensor_d = Roomba.getSensor("LEFT_ENCODER") - l_sensor % 508.8
+    r_sensor_d = Roomba.getSensor("RIGHT_ENCODER") - r_sensor % 508.8
 
     # conversion from encoder value to centimeters
     r_wheel = l_sensor_d * (72.0 * math.pi / 508.8) / 10
@@ -73,11 +104,15 @@ def Position(v, w, xc, yc, beta, l_sensor, r_sensor):
     return xn, yn, bn, Roomba.getSensor("LEFT_ENCODER"), Roomba.getSensor("RIGHT_ENCODER")
 
 ''' ----- Moving iRobot from one point to another ----- '''
+
+# starting point for testing (-2, -1) ---> (0, 0)
 x_start = -2
 y_start = -1
 x_final = 0
 y_final = 0
+
 """
+# user input for initial and final points
 x_start = int(input("START X: "))
 y_start = int(input("START Y: "))
 
@@ -88,7 +123,7 @@ left_sensor = Roomba.getSensor("LEFT_ENCODER")
 right_sensor = Roomba.getSensor("RIGHT_ENCODER")
 
 while x_start != x_final and y_start != y_final:
-    v, w = Control(x_start, y_start, x_final, y_final)
-    x_start, y_start, beta, left_sensor, right_sensor = Position(v, w, x_start, y_start, beta, left_sensor, right_sensor)
+    v, w = control(x_start, y_start, x_final, y_final)
+    x_start, y_start, beta, left_sensor, right_sensor = position(v, w, x_start, y_start, beta, left_sensor, right_sensor)
     Roomba.stop()
 Roomba.shutdown()
